@@ -33,6 +33,38 @@ let broker2;
 	});
 
 })();
+let PBroker1;
+let PBroker2;
+(function () {
+
+	const { ServiceBroker } = require("moleculer");
+	const Transporter = require("moleculer").Transporters.NATS;
+	const PatternMiddleware	= require("moleculer-pattern");
+
+	PBroker1 = new ServiceBroker({ nodeID: "node-1", transporter: new Transporter() });
+	PBroker2 = new ServiceBroker({ nodeID: "node-2", transporter: new Transporter() });
+	PBroker2.use(PatternMiddleware(PBroker2));
+
+	PBroker2.createService({
+		name: "math",
+		actions: {
+			add: {
+				pattern: { topic: 'math', cmd: 'add' },
+				handler({ params }) {
+					return params.a + params.b;
+				}
+			}
+		}
+	});
+
+	PBroker1.start();
+	PBroker2.start();
+
+	bench.add("Moleculer pattern matching", done => {
+		PBroker1.call("math.add", { a: 5, b: 3 }).then(done);
+	});
+
+})();
 
 // Hemera
 let hemera1;
@@ -58,24 +90,24 @@ let hemera2;
 
 })();
 
-// Cote
-let cote_resp;
-let cote_req;
-(function () {
-	const cote = require('cote');
+// // Cote
+// let cote_resp;
+// let cote_req;
+// (function () {
+// 	const cote = require('cote');
 
-	cote_resp = new cote.Responder({ name: 'bench-remote' });
-	cote_req = new cote.Requester({ name: 'bench-remote' });
+// 	cote_resp = new cote.Responder({ name: 'bench-remote' });
+// 	cote_req = new cote.Requester({ name: 'bench-remote' });
 	
-	cote_resp.on('add', (req, cb) => {
-		cb(req.a + req.b);
-	});	
+// 	cote_resp.on('add', (req, cb) => {
+// 		cb(req.a + req.b);
+// 	});	
 
-	bench.add("Cote", done => {
-		cote_req.send({ type: 'add', a: 5, b: 3 }, res => done());
-	});
+// 	bench.add("Cote", done => {
+// 		cote_req.send({ type: 'add', a: 5, b: 3 }, res => done());
+// 	});
 
-})();
+// })();
 
 // Seneca
 let seneca1;
@@ -107,6 +139,9 @@ setTimeout(() => {
 
 		broker1.stop();
 		broker2.stop();
+
+		PBroker1.stop();
+		PBroker2.stop();
 
 		seneca2.close();
 		seneca1.close();
