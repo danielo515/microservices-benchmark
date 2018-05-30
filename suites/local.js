@@ -58,6 +58,36 @@ let broker;
 
 })();
 
+// Moleculer
+let PBroker;
+(function () {
+
+	const { ServiceBroker } = require("moleculer");
+	const PatternMiddleware	= require("moleculer-pattern");
+	PBroker = new ServiceBroker();
+
+	PBroker.use(PatternMiddleware(PBroker));
+
+	PBroker.createService({
+		name: "math",
+		actions: {
+			add: {
+				pattern: { topic: 'math', cmd: 'add' },
+				handler({ params }) {
+					return params.a + params.b;
+				}
+			}
+		}
+	});
+
+	PBroker.start();
+
+	bench.add("Moleculer pattern matching", done => {
+		PBroker.call({topic: 'math', cmd:'add', a: 5, b: 3 }).then(done);
+	});
+
+})();
+
 // Nanoservices
 let nanoservices;
 (function () {
@@ -105,5 +135,6 @@ let seneca;
 setTimeout(() => {
 	benchmark.run([bench]).then(() => {
 		broker.stop();
+		PBroker.stop();
 	});
 }, 1000);
