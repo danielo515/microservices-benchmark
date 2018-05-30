@@ -83,7 +83,7 @@ let PBroker;
 	PBroker.start();
 
 	bench.add("Moleculer pattern matching", done => {
-		PBroker.call({topic: 'math', cmd:'add', a: 5, b: 3 }).then(done);
+		PBroker.act({topic: 'math', cmd:'add', a: 5, b: 3 }).then(done);
 	});
 
 })();
