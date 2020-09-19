@@ -15,7 +15,7 @@
     "benchmarkify": "2.1.0",
     "bluebird": "3.5.1",
     "cote": "0.15.1",
-    "lodash": "4.17.4",
+    "lodash": "4.17.19",
     "moleculer": "0.11.1",
     "moleculer-pattern": "github:icebob/moleculer-pattern",
     "nanoservices": "0.0.11",
